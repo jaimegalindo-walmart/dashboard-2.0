@@ -1,0 +1,35 @@
+name: Dashboard Auto-Update
+
+on:
+  schedule:
+    - cron: '0 12 * * 6'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests xlrd
+      
+      - name: Run dashboard update script
+        env:
+          NETLIFY_TOKEN: ${{ secrets.NETLIFY_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        run: python DASHBOARD_AUTO_DEPLOY.py
+      
+      - name: Log completion
+        if: always()
+        run: echo "Dashboard update job completed at $(date)"
+
